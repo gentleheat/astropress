@@ -20,6 +20,13 @@ use crate::providers::{
 mod new_rubric;
 use new_rubric::build_evaluation_rubric;
 
+#[path = "new_git.rs"]
+mod new_git;
+#[path = "new_manifest.rs"]
+mod new_manifest;
+use new_git::init_git_repository;
+use new_manifest::pin_astropress_dependency;
+
 // ── scaffold helpers (skipped — interactive / flag-only paths) ───────────────
 
 /// Selects the AllFeatures set from explicit CLI flags or falls back to the
@@ -113,14 +120,7 @@ pub(crate) fn scaffold_new_project(
     let fallback_name = project_dir.file_name()
         .and_then(|v| v.to_str()).unwrap_or("astropress-site");
     manifest.name = crate::sanitize_package_name(fallback_name);
-    manifest.dependencies.insert(
-        "astropress".into(),
-        if use_local_package {
-            format!("file:{}", crate::repo_root().join("packages").join("astropress").display())
-        } else {
-            format!("^{}", astropress_package_version()?)
-        },
-    );
+    pin_astropress_dependency(&mut manifest, use_local_package, &astropress_package_version()?);
 
     // Collect all feature choices. CLI flags or --yes/--defaults bypass the interactive wizard.
     let features = choose_features(
@@ -161,6 +161,9 @@ pub(crate) fn scaffold_new_project(
     fs::write(project_dir.join(".gitignore"),
         ".astro/\ndist/\nnode_modules/\n.astropress/\n.env\n")
         .map_err(crate::io_error)?;
+
+    // After `.gitignore` exists, so the repo never sees the generated `.env`.
+    if init_git_repository(project_dir) { println!("Initialized a git repository."); }
 
     println!("\nScaffolded Astropress project at {}", project_dir.display());
     println!("App host: {}  |  Content services: {}", scaffold.app_host, scaffold.content_services);

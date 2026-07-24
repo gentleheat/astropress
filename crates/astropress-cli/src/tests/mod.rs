@@ -25,6 +25,7 @@ mod parse_more;
 mod parse_more2;
 mod parse_extra;
 mod scaffold;
+mod scaffold_first_run;
 
 fn strings(values: &[&str]) -> Vec<String> {
     values.iter().map(|value| value.to_string()).collect()

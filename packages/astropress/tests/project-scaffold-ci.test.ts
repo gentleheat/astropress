@@ -27,7 +27,10 @@ describe("createPackageScripts — base scripts present for every host", () => {
 			expect(scripts.lint).toBe("bunx biome check src");
 			expect(scripts.format).toBe("bunx biome format --write src");
 			expect(scripts["doctor:strict"]).toBe("astropress doctor --strict");
-			expect(scripts.prepare).toBe("bunx lefthook install");
+			// Trailing `|| true`: `lefthook install` exits non-zero outside a git
+			// work tree, and a failed `prepare` would make the user's first
+			// `bun install` after `astropress new` look like a broken scaffold.
+			expect(scripts.prepare).toBe("bunx lefthook install || true");
 		});
 	}
 });

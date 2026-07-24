@@ -22,7 +22,12 @@ export function createPackageScripts(appHost: AstropressAppHost) {
 		lint: "bunx biome check src",
 		format: "bunx biome format --write src",
 		"doctor:strict": "astropress doctor --strict",
-		prepare: "bunx lefthook install",
+		// `lefthook install` exits non-zero outside a work tree (and when git is
+		// not installed at all), which would surface as a failed `prepare` on the
+		// user's very first `bun install`. `astropress new` initialises a repo so
+		// the hooks do get installed in the normal case; this keeps the rarer
+		// no-git case quiet instead of looking like a broken scaffold.
+		prepare: "bunx lefthook install || true",
 	};
 
 	// Server-output hosts ship the admin surface. For the two-site topology

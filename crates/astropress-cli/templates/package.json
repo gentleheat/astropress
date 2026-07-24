@@ -10,7 +10,7 @@
 		"lint": "bunx biome check src",
 		"format": "bunx biome format --write src",
 		"doctor:strict": "astropress doctor --strict",
-		"prepare": "bunx lefthook install"
+		"prepare": "bunx lefthook install || true"
 	},
 	"dependencies": {
 		"astro": "6.1.1",

@@ -12,7 +12,7 @@ fn scaffolds_new_project_from_example() {
 
     let package_json = fs::read_to_string(project_dir.join("package.json")).unwrap();
     assert!(package_json.contains("\"name\": \"demo\""));
-    assert!(package_json.contains("\"astropress\": \"file:"));
+    assert!(package_json.contains("\"@astropress-diy/astropress\": \"file:"));
     let env_contents = fs::read_to_string(project_dir.join(".env")).unwrap();
     assert!(env_contents.contains("ASTROPRESS_CONTENT_SERVICES=supabase"));
     assert!(!env_contents.contains("ASTROPRESS_LOCAL_PROVIDER="));
