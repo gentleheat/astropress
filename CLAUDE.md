@@ -74,6 +74,39 @@ Audits that filter source files by filename prefix (e.g. `audit-error-handling.t
 matches `admin-action-*.ts`) **must also honor the `stryker-disable-file: data-only`
 marker** so a constants-only sibling doesn't trip rules meant for runtime files.
 
+## Mutation testing — what the gate scores, and two traps
+
+The pre-push gate scores each changed file as **killed / (covered, scoreable) mutants**
+— see `scoreForFile` in `tooling/scripts/prepush-mutation-gate.ts`. Excluded from the
+denominator: `NoCoverage`, `Ignored`, `static` (module-load) mutants, and anything
+catalogued in `tooling/stryker/equivalent-mutants.json`. So when a file regresses, the
+fix targets its **Survived** mutants, not its NoCoverage ones — covering an untested
+branch helps only if the new test actually *kills* the mutant (a covered-but-surviving
+mutant counts *against* the score). Three legitimate ways to clear a Survived mutant:
+
+1. Add a test that observes the mutated behavior and fails on it.
+2. Simplify the code so the mutation point no longer exists — drop a redundant `?? ""`,
+   a provably-dead guard (e.g. an `if (!db)` fast-path that `withSafeRouteRegistryFallback`
+   already covers), or a duplicated regex.
+3. If it is genuinely equivalent (no test can distinguish it), add an entry to
+   `equivalent-mutants.json` with a one-line reason. Keep that catalog honest: when you
+   delete or move the code an entry describes, delete the entry.
+
+**Trap 1 — related-test association through the barrel.** Stryker runs with
+`vitest: { related: true }`, so it only runs the tests it believes cover a mutated file.
+A test that imports the unit under test through the package barrel
+(`@astropress-diy/astropress`) rather than its source module (`../src/<file>`) may not be
+associated with that file's mutants: the assertion passes under `bun vitest run` but never
+runs against the mutant, which then survives for no visible reason. **In mutation-killing
+tests, import the unit directly from its source module.**
+
+**Trap 2 — the baseline can go stale.** `baseline-scores.json` records the last-captured
+score per file (keyed by content hash). If the gate has been unable to complete — e.g. the
+dry run timed out — regressions accumulate undetected and the stored scores describe code
+the current tests no longer cover, so a file's baseline can read far higher than reality.
+Fix the coverage (never hand-lower the baseline), then regenerate with `bun run raise:baseline`
+once the gate runs clean.
+
 ## Final PR verification loop
 
 Before calling a CI or security fix done:

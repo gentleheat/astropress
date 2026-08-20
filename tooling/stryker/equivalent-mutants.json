@@ -17,55 +17,6 @@
 			"reason": "Same equivalence class as L20:6 — replacing the if-body with `{}` removes the fast-path early return. Control falls through to withSafeRouteRegistryFallback which routes to the same local-registry fallback when db is undefined (catching the resulting `db.prepare` TypeError). Identical observable result."
 		},
 		{
-			"file": "src/runtime-route-registry-pages.ts",
-			"line": 18,
-			"column": 6,
-			"mutator": "ConditionalExpression",
-			"reason": "`if (typeof value !== 'string' || !value) return null;` early-rejects non-strings and empty strings. The mutant `false` falls through to `getCmsConfig().templateKeys.includes(value) ? value : null`. For every non-string input (`.includes()` only matches by reference equality with strings) the result is `null`. For empty string `''` the `templateKeys` registry never contains the empty string by contract, so `.includes('')` is `false`, returning `null`. Identical observable result across the entire input domain."
-		},
-		{
-			"file": "src/runtime-route-registry-pages.ts",
-			"line": 18,
-			"column": 43,
-			"mutator": "BlockStatement",
-			"reason": "Same equivalence class as L18:6 — the if-body becomes `{}` (no early return). Execution continues into `templateKeys.includes(value) ? value : null` which produces the same `null` result for every (non-string | empty-string) input because the registry contract excludes both."
-		},
-		{
-			"file": "src/runtime-route-registry-pages.ts",
-			"line": 18,
-			"column": 6,
-			"mutator": "LogicalOperator",
-			"reason": "`typeof value !== 'string' || !value` → `typeof value !== 'string' && !value`. The original returns null for any non-string OR empty string; the mutant only returns null when value is BOTH non-string AND falsy. The fall-through path `templateKeys.includes(value)` returns false for non-strings (no element comparison succeeds) and for the empty string (registry contract). So every input that the original rejects is still rejected by the fall-through under the mutant — observably equivalent."
-		},
-		{
-			"file": "src/runtime-route-registry-pages.ts",
-			"line": 71,
-			"column": 6,
-			"mutator": "ConditionalExpression",
-			"reason": "`if (!db) { return local?.listStructuredPageRoutes() ?? []; }` is a fast-path for the no-DB case. The mutant `false` falls through to `withSafeRouteRegistryFallback(... db.prepare(...))` which throws on undefined db; the catch then invokes the same local-registry fallback (returning the same list) or the same `[]` default. Identical observable result for every (db, local-availability) pair."
-		},
-		{
-			"file": "src/runtime-route-registry-pages.ts",
-			"line": 71,
-			"column": 11,
-			"mutator": "BlockStatement",
-			"reason": "Same equivalence class as L71:6 — empty if-body lets execution continue into withSafeRouteRegistryFallback which catches the resulting `db.prepare` TypeError and routes through the same local-registry fallback (or `[]` default). Identical observable result."
-		},
-		{
-			"file": "src/runtime-route-registry-pages.ts",
-			"line": 119,
-			"column": 6,
-			"mutator": "ConditionalExpression",
-			"reason": "`if (!db) { return local?.getStructuredPageRoute(normalizedPath) ?? null; }` fast-path. Mutant `false` falls through to withSafeRouteRegistryFallback which throws on `db.prepare` with undefined db; catch invokes the same local-registry fallback or the same `null` default. Identical observable result."
-		},
-		{
-			"file": "src/runtime-route-registry-pages.ts",
-			"line": 119,
-			"column": 11,
-			"mutator": "BlockStatement",
-			"reason": "Same equivalence class as L117:6 — empty if-body falls through to withSafeRouteRegistryFallback, which catches the resulting TypeError and produces the same observable result via local-registry fallback or `null` default."
-		},
-		{
 			"file": "src/runtime-route-registry-system.ts",
 			"line": 50,
 			"column": 6,
