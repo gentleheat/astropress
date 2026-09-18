@@ -1,6 +1,6 @@
 {
 	"name": "@astropress-diy/astropress",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"description": "Low-carbon Astro web app framework for relatively simple sites run by individuals and small organizations.",
 	"type": "module",
 	"exports": {
